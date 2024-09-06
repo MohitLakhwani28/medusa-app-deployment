@@ -1,0 +1,40 @@
+# .github/workflows/ci-cd.yml
+name: Deploy Infrastructure
+
+on:
+  push:
+    branches:
+      - main  # Trigger the workflow on pushes to the main branch
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout the code
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Step 2: Set up Terraform
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.4.0  # Specify the version you are using
+
+      # Step 3: Initialize Terraform
+      - name: Terraform Init
+        run: terraform init
+        working-directory: ./terraform  # Directory where Terraform files are located
+
+      # Step 4: Plan Terraform changes
+      - name: Terraform Plan
+        run: terraform plan
+        working-directory: ./terraform
+
+      # Step 5: Apply Terraform changes
+      - name: Terraform Apply
+        run: terraform apply -auto-approve
+        working-directory: ./terraform
+        env:
+          TF_VAR_aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          TF_VAR_aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
